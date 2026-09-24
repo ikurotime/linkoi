@@ -1,0 +1,31 @@
+{
+  "name": "linkoi",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "check": "npm run check --workspaces",
+    "test": "bun test packages",
+    "verify": "npm run build && npm run check && npm test",
+    "dev:site": "vite site --host 127.0.0.1",
+    "build:site": "vite build site",
+    "pack:local": "npm run build && mkdir -p artifacts && npm pack --workspace @linkoi/core --pack-destination artifacts && npm pack --workspace @linkoi/worker --pack-destination artifacts",
+    "deploy:site": "npm run build:site && wrangler deploy --config deploy/site.jsonc",
+    "deploy:api": "wrangler deploy --config deploy/api.jsonc"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "ogl": "^1.0.11",
+    "shiki": "^4.4.3",
+    "typescript": "6.0.3",
+    "vite": "^6.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikurotime/linkoi.git"
+  },
+  "homepage": "https://linkoi.dev/docs/"
+}

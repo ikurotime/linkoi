@@ -1,0 +1,52 @@
+{
+  "version": "0.1.0",
+  "type": "module",
+  "license": "PolyForm-Shield-1.0.0",
+  "author": "David Huertas",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit"
+  },
+  "name": "@linkoi/worker",
+  "description": "Deploy Linkoi as a Cloudflare Worker with KV caching.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cache": {
+      "types": "./dist/cache.d.ts",
+      "import": "./dist/cache.js"
+    }
+  },
+  "dependencies": {
+    "hono": "^4.13.4"
+  },
+  "peerDependencies": {
+    "@linkoi/core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@linkoi/core": "0.1.0",
+    "wrangler": "^4.126.0",
+    "@cloudflare/workers-types": "^5.20260822.1"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikurotime/linkoi.git",
+    "directory": "packages/worker"
+  },
+  "homepage": "https://linkoi.dev/docs/"
+}

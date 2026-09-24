@@ -1,0 +1,73 @@
+{
+  "version": "0.1.0",
+  "type": "module",
+  "license": "PolyForm-Shield-1.0.0",
+  "author": "David Huertas",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit"
+  },
+  "name": "@linkoi/core",
+  "description": "Extract normalized metadata from URLs or supplied HTML.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./guard": {
+      "types": "./dist/guard.d.ts",
+      "import": "./dist/guard.js"
+    },
+    "./extract": {
+      "types": "./dist/extract.d.ts",
+      "import": "./dist/extract.js"
+    },
+    "./normalize": {
+      "types": "./dist/normalize.d.ts",
+      "import": "./dist/normalize.js"
+    },
+    "./fetch-html": {
+      "types": "./dist/fetch-html.d.ts",
+      "import": "./dist/fetch-html.js"
+    },
+    "./fallback": {
+      "types": "./dist/fallback.d.ts",
+      "import": "./dist/fallback.js"
+    },
+    "./youtube": {
+      "types": "./dist/youtube.d.ts",
+      "import": "./dist/youtube.js"
+    }
+  },
+  "dependencies": {
+    "metascraper": "^5.45.0",
+    "metascraper-author": "^5.45.0",
+    "metascraper-date": "^5.45.0",
+    "metascraper-description": "^5.45.0",
+    "metascraper-image": "^5.45.0",
+    "metascraper-lang": "^5.45.0",
+    "metascraper-logo": "^5.45.0",
+    "metascraper-publisher": "^5.45.0",
+    "metascraper-title": "^5.45.0",
+    "metascraper-url": "^5.45.0"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikurotime/linkoi.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://linkoi.dev/docs/"
+}

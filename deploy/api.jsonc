@@ -1,0 +1,18 @@
+{
+  "name": "linkoi",
+  "main": "api.js",
+  "compatibility_date": "2026-09-24",
+  "workers_dev": true,
+  "services": [
+    {
+      "binding": "METADATA",
+      "service": "attolink"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "api.linkoi.dev",
+      "custom_domain": true
+    }
+  ]
+}

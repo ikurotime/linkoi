@@ -1,0 +1,9 @@
+node_modules/
+**/dist/
+artifacts/
+.wrangler/
+**/.wrangler/
+.env*
+.dev.vars*
+packages/worker/wrangler.json
+.DS_Store

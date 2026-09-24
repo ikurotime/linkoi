@@ -1,0 +1,21 @@
+{
+  "name": "linkoi",
+  "main": "./dist/index.js",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "META_CACHE",
+      "id": "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+    }
+  ],
+  "vars": {
+    "MAX_HTML_BYTES": "2097152",
+    "FETCH_TIMEOUT_MS": "5000",
+    "FRESH_TTL_SECONDS": "86400",
+    "STALE_TTL_SECONDS": "604800",
+    "SELF_HOSTS": ""
+  }
+}
