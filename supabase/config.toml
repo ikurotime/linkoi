@@ -1,0 +1,2 @@
+[functions.linkoi-accounts]
+verify_jwt = false # The handler verifies Supabase sessions and hashes personal API keys.

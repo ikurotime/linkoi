@@ -10,8 +10,22 @@ Extract normalized metadata from a URL or supplied HTML. Use the library in your
 
 | Package | Purpose |
 | --- | --- |
+| `@linkoi/client` | Typed server-side client for the hosted API, with zero runtime dependencies. |
 | `@linkoi/core` | Fetching, HTML extraction, normalization, and YouTube metadata, with zero runtime dependencies. |
 | `@linkoi/worker` | Hono API with Cloudflare KV caching, stale-while-revalidate, and optional bearer authentication. |
+
+## Hosted API
+
+[Sign in with GitHub](https://linkoi.dev/dashboard/) and create an API key. Keys are displayed once; only their SHA-256 hashes are stored. Keep keys on your server.
+
+```js
+import { createClient } from '@linkoi/client'
+
+const linkoi = createClient({ apiKey: process.env.LINKOI_API_KEY })
+const { data } = await linkoi.resolve('https://example.com')
+```
+
+Install with `npm install @linkoi/client`. Accounts start with 1,000 metadata requests per UTC calendar month and 60 per minute, shared across their keys. [HTTP reference](https://linkoi.dev/docs/http-api/) · [Account deployment](./docs/accounts.md)
 
 ## Develop locally
 

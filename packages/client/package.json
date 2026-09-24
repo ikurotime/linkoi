@@ -1,0 +1,35 @@
+{
+  "name": "@linkoi/client",
+  "version": "0.1.1",
+  "type": "module",
+  "license": "PolyForm-Shield-1.0.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit"
+  },
+  "description": "Typed HTTP client for the Linkoi metadata API.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "author": "David Huertas",
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ikurotime/linkoi.git",
+    "directory": "packages/client"
+  },
+  "homepage": "https://linkoi.dev/docs/http-api/"
+}

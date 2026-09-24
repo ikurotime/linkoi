@@ -7,3 +7,6 @@ artifacts/
 .dev.vars*
 packages/worker/wrangler.json
 .DS_Store
+
+supabase/.temp/
+supabase/.branches/

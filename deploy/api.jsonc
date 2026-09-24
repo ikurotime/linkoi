@@ -14,5 +14,9 @@
       "pattern": "api.linkoi.dev",
       "custom_domain": true
     }
-  ]
+  ],
+  "vars": {
+    "ACCOUNTS_URL": "https://fgkhrbvpsgvdoxqamnzi.supabase.co/functions/v1/linkoi-accounts",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_zXjCxp2htQ7zzEYoKx4oBg_4AUxIYeH"
+  }
 }

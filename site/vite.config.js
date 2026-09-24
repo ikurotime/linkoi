@@ -17,5 +17,5 @@ export default defineConfig({
         (_, open, language, bar, code) => open + language + bar + engine.codeToHtml(decode(code), { lang: { ts: 'typescript', sh: 'shellscript', json: 'json' }[language], theme: 'github-dark' }));
     }
   }],
-  build: { rollupOptions: { input: [resolve(root, 'index.html'), resolve(root, 'docs/index.html'), ...pages] } }
+  build: { rollupOptions: { input: [resolve(root, 'index.html'), resolve(root, 'dashboard/index.html'), resolve(root, 'docs/index.html'), ...pages] } }
 });

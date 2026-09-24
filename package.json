@@ -12,11 +12,12 @@
     "verify": "npm run build && npm run check && npm test",
     "dev:site": "vite site --host 127.0.0.1",
     "build:site": "vite build site",
-    "pack:local": "npm run build && mkdir -p artifacts && npm pack --workspace @linkoi/core --pack-destination artifacts && npm pack --workspace @linkoi/worker --pack-destination artifacts",
+    "pack:local": "npm run build && mkdir -p artifacts && npm pack --workspace @linkoi/core --pack-destination artifacts && npm pack --workspace @linkoi/worker --pack-destination artifacts && npm pack --workspace @linkoi/client --pack-destination artifacts",
     "deploy:site": "npm run build:site && wrangler deploy --config deploy/site.jsonc",
     "deploy:api": "wrangler deploy --config deploy/api.jsonc"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "2.117.1",
     "@types/bun": "^1.4.0",
     "ogl": "^1.0.11",
     "shiki": "^4.4.3",

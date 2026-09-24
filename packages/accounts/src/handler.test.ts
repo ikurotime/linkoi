@@ -1,0 +1,14 @@
+import {expect,it} from 'bun:test';
+import {accountHandler,digest,type Store} from './handler.js';
+function setup(){
+ const records=new Map<string,any>();let serial=0;
+ const store:Store={user:async token=>token==='user-a'?'a':token==='user-b'?'b':null,list:async user=>[...records.values()].filter(r=>r.user===user).map(({hash,user,...rest})=>rest),usage:async()=>({month_requests:0}),issue:async(user,name,hash,prefix)=>{const id=`00000000-0000-0000-0000-${String(++serial).padStart(12,'0')}`;records.set(id,{id,user,name,hash,prefix});return{id,name,prefix}},revoke:async(user,id)=>{const r=records.get(id);if(!r||r.user!==user)return false;r.revoked=true;return true},authorize:async(hash)=>({status:[...records.values()].some(r=>r.hash===hash&&!r.revoked)?200:401})};
+ const handle=accountHandler(store);
+ const request=(path:string,token='user-a',method='GET',body?:unknown)=>handle(new Request('https://example.com/linkoi-accounts'+path,{method,headers:{authorization:`Bearer ${token}`},body:body?JSON.stringify(body):undefined}));
+ return {records,request,store};
+}
+it('stores only hashes and returns a key only on creation',async()=>{const {request,records}=setup();const created=await(await request('/keys','user-a','POST',{name:'App'})).json();expect(created.key).toMatch(/^lk_live_[a-f0-9]{64}$/);expect([...records.values()][0].hash).toBe(await digest(created.key));const list=await(await request('/keys')).json();expect(JSON.stringify(list)).not.toContain(created.key);expect(JSON.stringify(list)).not.toContain('hash')});
+it('prevents cross-user listing and revocation',async()=>{const {request}=setup();const key=await(await request('/keys','user-a','POST',{name:'App'})).json();expect(await(await request('/keys','user-b')).json()).toEqual({keys:[]});expect((await request('/keys/'+key.id,'user-b','DELETE')).status).toBe(404);expect((await request('/authorize',key.key,'POST')).status).toBe(200);await request('/keys/'+key.id,'user-a','DELETE');expect((await request('/authorize',key.key,'POST')).status).toBe(401)});
+it('rejects invalid sessions and malformed key names',async()=>{const{request}=setup();expect((await request('/keys','invalid')).status).toBe(401);expect((await request('/keys','user-a','POST',{name:''})).status).toBe(400)});
+it('fails closed when quota storage fails',async()=>{const{request,store}=setup();store.authorize=async()=>{throw Error('database secret')};const response=await request('/authorize','lk_live_'+'a'.repeat(64),'POST');expect(response.status).toBe(503);expect(await response.text()).not.toContain('database secret')});
+it('returns 429 and retry-after on quota exhaustion',async()=>{const{request,store}=setup();store.authorize=async()=>({status:429,reason:'rate_limit',retry_after:15});const response=await request('/authorize','lk_live_'+'a'.repeat(64),'POST');expect(response.status).toBe(429);expect(response.headers.get('retry-after')).toBe('15')});
