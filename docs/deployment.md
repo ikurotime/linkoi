@@ -10,8 +10,8 @@ Both packages are published at 0.1.1. Tabstash pins the registry versions. Authe
 ## Verify the endpoint
 
 ```sh
-curl https://api.linkoi.dev/health
-curl --get https://api.linkoi.dev/ --data-urlencode "url=https://kitmo.app"
+curl https://api.linkoi.dev/health -H "Authorization: Bearer $LINKOI_API_KEY"
+curl --get https://api.linkoi.dev/ --data-urlencode "url=https://kitmo.app" -H "Authorization: Bearer $LINKOI_API_KEY"
 ```
 
-The endpoint currently permits public access, including cache invalidation, matching the existing Tabstash service. There are no per-customer quotas or hosted-service guarantees. Keep the backing service deployed; the alias cannot extract metadata on its own. SELF_HOSTS includes both Workers hostnames and api.linkoi.dev to reject recursive extraction.
+All routes require the API_KEY secret, including health and cache invalidation. Tabstash sends its server-only LINKOI_API_KEY. Both hostname aliases forward authentication to the backing service. There are no per-customer quotas or hosted-service guarantees. Keep the backing service deployed; the alias cannot extract metadata on its own. SELF_HOSTS includes both Workers hostnames and api.linkoi.dev to reject recursive extraction.
