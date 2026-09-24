@@ -1,6 +1,6 @@
 # @linkoi/core
 
-URL and HTML metadata extraction. Pre-release; not published yet.
+URL and HTML metadata extraction. Developer preview, v0.1.0.
 
 ```ts
 import { resolve, fromHtml, type Metadata } from '@linkoi/core'

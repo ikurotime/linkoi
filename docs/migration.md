@@ -1,9 +1,7 @@
 # Tabstash migration
 
-The original `@tabstash/linkoi` workspace remains as an adapter. Its deployed Worker name, KV namespace, API secrets, and HTTP response envelope stay under Tabstash's control.
+Tabstash’s `@tabstash/linkoi` adapter pins `@linkoi/core` and `@linkoi/worker` to npm version 0.1.0. The temporary vendor archives and root override have been removed.
 
-Until Linkoi is published, run `npm run pack:local` in this repository. Copy the two archives from `artifacts/` into Tabstash's `packages/linkoi/vendor/` and install them through `file:` dependencies. Tabstash also needs a root `overrides` entry mapping `@linkoi/core` to `file:./packages/linkoi/vendor/linkoi-core-0.1.0.tgz` so Bun resolves the Worker peer locally. Remove that override when switching to published versions. This makes a fresh Tabstash checkout independent of an adjacent Linkoi checkout or unpublished registry versions.
+The backing Worker retains the name `attolink`, its KV cache, and YouTube secret. https://api.linkoi.dev forwards to it. LINKOI_URL takes precedence over the legacy ATTOLINK_URL setting.
 
-The adapter re-exports the Worker as its default entry and routes old subpath exports to core or Worker cache modules. After a public release, replace the file dependencies with registry versions. Use LINKOI_URL=https://api.linkoi.dev for the branded endpoint. ATTOLINK_URL remains a compatibility fallback.
-
-The standalone repository is the source of truth. Rebuild and replace vendor archives whenever Linkoi changes. Run both repositories' tests and the backing Worker dry-run before deployment. Do not run two deployments against the same production KV namespace during evaluation.
+For updates, publish core before worker, update the exact versions in Tabstash, refresh bun.lock, run adapter tests and typechecks, and verify the Worker bundle before deployment.

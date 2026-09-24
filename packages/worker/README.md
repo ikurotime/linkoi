@@ -1,6 +1,6 @@
 # @linkoi/worker
 
-Linkoi's Hono application for Cloudflare Workers. Requires `@linkoi/core` and a KV namespace bound as `META_CACHE`. Pre-release; not published yet.
+Linkoi's Hono application for Cloudflare Workers. Requires `@linkoi/core` and a KV namespace bound as `META_CACHE`. Developer preview, v0.1.0.
 
 ## Local development
 

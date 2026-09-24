@@ -63,7 +63,6 @@
     "metascraper-title": "^5.45.0",
     "metascraper-url": "^5.45.0"
   },
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ikurotime/linkoi.git",

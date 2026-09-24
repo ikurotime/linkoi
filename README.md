@@ -4,7 +4,7 @@
 
 Extract normalized metadata from a URL or supplied HTML. Use the library in your server, or deploy the included Cloudflare Worker for an HTTP API with caching.
 
-**Pre-release.** The npm scope has been created; these packages have not been published. Source-available under PolyForm Shield 1.0.0. See [LICENSE](./LICENSE) and the [licensing notes](./docs/licensing.md).
+**Developer preview, v0.1.0.** Install with `npm install @linkoi/core@0.1.0`. Source-available under PolyForm Shield 1.0.0. See [LICENSE](./LICENSE) and the [licensing notes](./docs/licensing.md).
 
 ## Packages
 
@@ -23,7 +23,7 @@ npm run verify
 npm run dev:site
 ```
 
-The core example below runs after the workspace build. It demonstrates the intended package API; npm installation becomes available after a release.
+The example below runs after installing `@linkoi/core`.
 
 ```js
 import { resolve, fromHtml } from '@linkoi/core'
@@ -55,4 +55,4 @@ Optional YouTube Data API access supplies video metadata. This does not return p
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md). Keep extraction independent of deployment infrastructure. Publication remains disabled until the release checklist is complete.
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Keep extraction independent of deployment infrastructure. Run the release checklist before publishing updates.

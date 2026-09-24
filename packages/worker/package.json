@@ -42,7 +42,6 @@
     "wrangler": "^4.126.0",
     "@cloudflare/workers-types": "^5.20260822.1"
   },
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ikurotime/linkoi.git",
