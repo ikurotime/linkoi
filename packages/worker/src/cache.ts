@@ -19,7 +19,7 @@ export interface CacheLookup {
 }
 
 function keyFor(canonicalUrl: string): string {
-  return `meta:v1:${canonicalUrl}`;
+  return `meta:v2:${canonicalUrl}`;
 }
 
 export async function readCache(

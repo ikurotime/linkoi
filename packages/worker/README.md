@@ -1,6 +1,6 @@
 # @linkoi/worker
 
-Linkoi's Hono application for Cloudflare Workers. Requires `@linkoi/core` and a KV namespace bound as `META_CACHE`. Developer preview, v0.1.0.
+Linkoi's Hono application for Cloudflare Workers. Requires `@linkoi/core` and a KV namespace bound as `META_CACHE`. Developer preview, v0.1.1.
 
 ## Local development
 
@@ -21,7 +21,7 @@ No production account IDs, KV IDs, or secrets are included.
 
 - `GET /?url=https%3A%2F%2Fexample.com`: `{ status: "success", data: Metadata, cache: "hit" | "stale" | "miss" | "bypass" }`.
 - `fresh=true` bypasses cache reads and updates the cache.
-- `fallback=false` disables the Metascraper fallback for extraction. Existing cache entries are shared; use `fresh=true` when you need a new extraction with this flag.
+- `fallback` is deprecated and ignored. All extraction uses Linkoi’s own parser.
 - `DELETE /?url=...` invalidates one cache key.
 - `GET /health` returns `{ ok: true }`.
 

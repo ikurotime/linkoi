@@ -1,3 +1,11 @@
+# 0.1.1
+
+- Remove Metascraper and all of its plugins. Core has zero runtime dependencies.
+- Supplied HTML is always parsed offline, including incomplete pages.
+- Legacy fallback options and the fallback export remain inert compatibility shims.
+- Worker cache keys use a new namespace so old external extraction results are not served.
+- Missing metadata stays null rather than invoking another extractor.
+
 # Changelog
 
 ## 0.1.0 — unreleased

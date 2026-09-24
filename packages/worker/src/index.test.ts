@@ -31,7 +31,7 @@ it('preserves the response envelope and cache lifecycle', async () => {
 });
 it('serves stale entries and revalidates in the background', async () => {
   const { request, entries, pending } = setup();
-  entries.set('meta:v1:https://example.com/', { data: { title: 'Old' }, fetchedAt: 0 });
+  entries.set('meta:v2:https://example.com/', { data: { title: 'Old' }, fetchedAt: 0 });
   globalThis.fetch = (async () => new Response('<title>New</title><meta name="description" content="D">', { headers: { 'content-type': 'text/html' } })) as unknown as typeof fetch;
   expect(await (await request('/?url=https://example.com')).json()).toMatchObject({ cache: 'stale', data: { title: 'Old' } });
   await Promise.all(pending);
@@ -47,4 +47,11 @@ it('rejects missing URLs and private targets', async () => {
   const { request } = setup();
   expect((await request('/')).status).toBe(400);
   expect((await request('/?url=http://127.0.0.1')).status).toBe(400);
+});
+
+it('ignores results cached by the old extractor', async () => {
+  const { request, entries } = setup();
+  entries.set('meta:v1:https://example.com/', { data: { title: 'Old external result', source: 'fallback' }, fetchedAt: Date.now() / 1000 });
+  globalThis.fetch = (async () => new Response('<title>Own parser</title>', { headers: { 'content-type': 'text/html' } })) as unknown as typeof fetch;
+  expect(await (await request('/?url=https://example.com')).json()).toMatchObject({ cache: 'miss', data: { title: 'Own parser', source: 'fast' } });
 });

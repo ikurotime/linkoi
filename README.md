@@ -4,13 +4,13 @@
 
 Extract normalized metadata from a URL or supplied HTML. Use the library in your server, or deploy the included Cloudflare Worker for an HTTP API with caching.
 
-**Developer preview, v0.1.0.** Install with `npm install @linkoi/core@0.1.0`. Source-available under PolyForm Shield 1.0.0. See [LICENSE](./LICENSE) and the [licensing notes](./docs/licensing.md).
+**Developer preview, v0.1.1.** Install with `npm install @linkoi/core@0.1.1`. Source-available under PolyForm Shield 1.0.0. See [LICENSE](./LICENSE) and the [licensing notes](./docs/licensing.md).
 
 ## Packages
 
 | Package | Purpose |
 | --- | --- |
-| `@linkoi/core` | Fetching, HTML extraction, normalization, YouTube metadata, and a lazy Metascraper fallback. |
+| `@linkoi/core` | Fetching, HTML extraction, normalization, and YouTube metadata, with zero runtime dependencies. |
 | `@linkoi/worker` | Hono API with Cloudflare KV caching, stale-while-revalidate, and optional bearer authentication. |
 
 ## Develop locally
@@ -42,7 +42,7 @@ const local = await fromHtml(
 
 ## What it extracts
 
-Canonical URL, title, description, image, logo, publisher, author, publication date, and language. The fast path reads Open Graph, Twitter Card, JSON-LD, and HTML metadata. Incomplete results can use Metascraper. Missing values are `null`, and `source` identifies the fast or fallback path.
+Canonical URL, title, description, image, logo, publisher, author, publication date, and language. The fast path reads Open Graph, Twitter Card, JSON-LD, and HTML metadata. Missing values are `null`. New results have `source: "fast"`.
 
 Optional YouTube Data API access supplies video metadata. This does not return playable embeds.
 
@@ -51,7 +51,7 @@ Optional YouTube Data API access supplies video metadata. This does not return p
 - No JavaScript rendering, screenshots, PDFs, general oEmbed, crawling, or article-body extraction.
 - Core uses standard fetch APIs but is validated on Node.js 22 and Bun; the Worker targets Cloudflare. Other runtimes are not yet claimed as supported.
 - URL checks reject known local addresses and unsafe redirects. They are **not DNS-aware SSRF protection**. Use network egress restrictions or your own controlled fetching for untrusted targets on private networks. See [SECURITY.md](./SECURITY.md).
-- The optional fallback has additional dependencies; lazy loading is not a promise of a tiny installation or Worker bundle.
+- Core has zero runtime dependencies. The Worker depends on core and Hono.
 
 ## Contributing
 

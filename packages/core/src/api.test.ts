@@ -41,3 +41,15 @@ describe('public API', () => {
     expect((await resolve('https://youtu.be/P4QodeA_lQ0', { youtubeApiKey: 'test', fallback: false })).title).toBe('A page');
   });
 });
+
+it('parses incomplete HTML offline even with the legacy fallback option', async () => {
+  let calls = 0;
+  stub(async () => { calls++; throw new Error('Unexpected network access'); });
+  for (const options of [{}, { fallback: true }, { fallback: false }]) {
+    const result = await fromHtml('<title>Only a title</title>', 'https://example.com', options);
+    expect(result.title).toBe('Only a title');
+    expect(result.description).toBeNull();
+    expect(result.source).toBe('fast');
+  }
+  expect(calls).toBe(0);
+});

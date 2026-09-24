@@ -1,7 +1,7 @@
 import { assertSafeUrl } from './guard.js';
 import { fetchHtml } from './fetch-html.js';
 import { extractRawTags } from './extract.js';
-import { normalize, isGoodEnough, type Metadata } from './normalize.js';
+import { normalize, type Metadata } from './normalize.js';
 import { extractVideoId, resolveYouTube } from './youtube.js';
 
 export interface ExtractOptions {
@@ -10,21 +10,15 @@ export interface ExtractOptions {
   /** Timeout per upstream fetch. Default: 5 seconds. */
   timeoutMs?: number;
   selfHosts?: string[];
+  /** @deprecated Ignored. Extraction always uses Linkoi’s own parser. */
   fallback?: boolean;
   youtubeApiKey?: string;
 }
 
-/** Extract supplied HTML without making a network request on the fast path. */
+/** Extract supplied HTML without making any network requests. */
 export async function fromHtml(html: string, url: string, options: Pick<ExtractOptions, 'fallback'> = {}): Promise<Metadata> {
   const base = assertSafeUrl(url, []);
-  const result = normalize(await extractRawTags(html), base.toString());
-  if (isGoodEnough(result) || options.fallback === false) return result;
-  try {
-    const { extractWithFallback } = await import('./fallback.js');
-    return await extractWithFallback(html, base.toString(), result);
-  } catch {
-    return result;
-  }
+  return normalize(await extractRawTags(html), base.toString());
 }
 
 /** Fetch one public URL and return normalized page metadata. */
