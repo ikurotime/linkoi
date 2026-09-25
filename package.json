@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "check": "npm run check --workspaces",
-    "test": "bun test packages",
+    "test": "bun test packages && node --test scripts/*.test.cjs",
     "verify": "npm run build && npm run check && npm test",
     "dev:site": "vite site --host 127.0.0.1",
     "build:site": "vite build site",

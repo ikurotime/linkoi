@@ -33,7 +33,8 @@ Release Please reads the merged Git history, not PR labels.
 1. Merge a feature or fix PR into `main`.
 2. Release Please opens or updates a release PR containing the version bump and
    generated changelog. It includes subsequent releasable changes automatically.
-3. Review that release PR and its CI run, then squash merge it.
+3. Generate and test a release candidate as described below. Review the release PR
+   and its CI run, then squash merge it.
 4. Release Please creates the matching tag and GitHub release.
 
 The workflow uses the repository `GITHUB_TOKEN`; no personal token is needed.
@@ -45,6 +46,35 @@ The CI workflow can also be rerun manually on that branch.
 
 Releases are not automatically merged. npm publication and website/API deployment
 are separate from this workflow. No moving `latest` or major-only tags are made.
+
+## Test a release candidate
+
+After the candidate workflow is merged into `main`, open Actions > Release
+candidate > Run workflow. Select `main` and enter the open Release Please PR
+number, for example `3` for the proposed `0.2.0` release.
+
+The workflow resolves that PR's exact head commit, runs the same build, typecheck,
+tests, site build and package checks as CI, and then creates `v0.2.0-rc.1` as a
+GitHub prerelease. It does not become the latest stable release. A changed PR
+gets the next RC number; rerunning the same commit reuses its existing candidate.
+Existing tags are never moved. If the PR changes while checks run, publication
+fails and you must start a new run.
+
+In Kitmo, set the web app's `linkoi` dependency to
+`github:ikurotime/linkoi#v0.2.0-rc.1`, update its Bun lockfile, and run its tests
+and build. Test the YouTube handoff on physical iPhone and Android devices,
+including links opened from Instagram and LinkedIn. Record the candidate tested
+in the release PR before merging. If its head commit changes, test a new RC.
+This testing step is a maintainer responsibility, not a required approval gate.
+
+Once validated, merge the release PR. Release Please creates the stable `v0.2.0`
+tag; Kitmo can then explicitly switch its dependency to that stable tag.
+
+RC tags identify tested source commits. The root package manifest retains the
+proposed stable version and workspace versions remain independent. The workflow
+does not publish npm packages or deploy services. Candidate checks run with a
+read-only token; only the separate publishing job can create tags and releases.
+It accepts open, non-draft Release Please PRs from this repository only.
 
 ## Package releases and consumers
 
