@@ -12,7 +12,7 @@
     "verify": "npm run build && npm run check && npm test",
     "dev:site": "vite site --host 127.0.0.1",
     "build:site": "vite build site",
-    "pack:local": "npm run build && mkdir -p artifacts && npm pack --workspace @linkoi/core --pack-destination artifacts && npm pack --workspace @linkoi/worker --pack-destination artifacts && npm pack --workspace @linkoi/client --pack-destination artifacts",
+    "pack:local": "npm run build && mkdir -p artifacts && npm pack --workspace @linkoi/core --pack-destination artifacts && npm pack --workspace @linkoi/worker --pack-destination artifacts && npm pack --workspace @linkoi/client --pack-destination artifacts && npm pack --workspace @linkoi/deep-links --pack-destination artifacts",
     "deploy:site": "npm run build:site && wrangler deploy --config deploy/site.jsonc",
     "deploy:api": "wrangler deploy --config deploy/api.jsonc"
   },
@@ -28,5 +28,11 @@
     "type": "git",
     "url": "git+https://github.com/ikurotime/linkoi.git"
   },
-  "homepage": "https://linkoi.dev/docs/"
+  "homepage": "https://linkoi.dev/docs/",
+  "exports": {
+    "./deep-links": {
+      "types": "./packages/deep-links/src/index.ts",
+      "import": "./packages/deep-links/src/index.ts"
+    }
+  }
 }

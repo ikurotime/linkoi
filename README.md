@@ -10,6 +10,7 @@ Extract normalized metadata from a URL or supplied HTML. Use the library in your
 
 | Package | Purpose |
 | --- | --- |
+| `@linkoi/deep-links` | YouTube URL validation and web/iOS/Android app links, with zero runtime dependencies. |
 | `@linkoi/client` | Typed server-side client for the hosted API, with zero runtime dependencies. |
 | `@linkoi/core` | Fetching, HTML extraction, normalization, and YouTube metadata, with zero runtime dependencies. |
 | `@linkoi/worker` | Hono API with Cloudflare KV caching, stale-while-revalidate, and optional bearer authentication. |
@@ -70,3 +71,20 @@ Optional YouTube Data API access supplies video metadata. This does not return p
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Keep extraction independent of deployment infrastructure. Run the release checklist before publishing updates.
+
+## Deep links from Git
+
+The deep-link package is not yet published to npm. To consume its source, pin
+this repository to a full commit SHA in your dependency manifest:
+
+```json
+{ "dependencies": { "linkoi": "github:ikurotime/linkoi#<full-commit-sha>" } }
+```
+
+```ts
+import { resolveDeepLink } from 'linkoi/deep-links'
+```
+
+This entry exports TypeScript for bundlers such as Vite. For compiled ESM, use
+`npm pack --workspace @linkoi/deep-links` after installing the repository's dev
+dependencies. See [the package documentation](./packages/deep-links/README.md).

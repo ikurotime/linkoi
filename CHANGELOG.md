@@ -1,3 +1,10 @@
+# Unreleased
+
+- Add `@linkoi/deep-links` for YouTube URL validation, timestamp normalization
+  and web/iOS/Android handoff URLs, without runtime dependencies.
+- Expose `linkoi/deep-links` as a TypeScript source entry for consumers pinned
+  to this Git repository. Hosting, routes and analytics remain with consumers.
+
 # 0.1.1
 
 - Remove Metascraper and all of its plugins. Core has zero runtime dependencies.
