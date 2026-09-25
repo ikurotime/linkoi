@@ -1,0 +1,49 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: release-please-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update release PR or create release
+        id: release
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # GITHUB_TOKEN-created PRs do not trigger pull_request workflows.
+      # Explicit workflow_dispatch is allowed and checks the release branch.
+      - name: Run CI on the release PR
+        if: steps.release.outputs.pr != ''
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        with:
+          script: |
+            const pr = JSON.parse(process.env.RELEASE_PR);
+            if (pr.baseBranchName !== 'main' || !pr.headBranchName.startsWith('release-please--')) {
+              throw new Error('Unexpected release PR branch');
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: 'ci.yml',
+              ref: pr.headBranchName,
+            });
