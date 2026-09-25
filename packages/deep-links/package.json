@@ -1,7 +1,6 @@
 {
   "name": "@linkoi/deep-links",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.0-rc.1",
   "description": "Framework-independent video URL validation and mobile app links.",
   "type": "module",
   "sideEffects": false,
@@ -28,5 +27,10 @@
     "type": "git",
     "url": "git+https://github.com/ikurotime/linkoi.git",
     "directory": "packages/deep-links"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next",
+    "registry": "https://registry.npmjs.org/"
   }
 }

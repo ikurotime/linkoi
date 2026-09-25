@@ -98,3 +98,30 @@ References:
 
 - [Release Please action](https://github.com/googleapis/release-please-action)
 - [Manifest configuration](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md)
+
+## Publish the experimental deep-link package
+
+`@linkoi/deep-links` is prepared at `0.1.0-rc.1`. Its publish configuration sets
+public access and the `next` dist-tag. The repository root and `@linkoi/accounts`
+remain private. Publish only the named workspace, not all workspaces.
+
+From a reviewed checkout containing this package version:
+
+```sh
+npm ci
+npm run verify
+npm publish --workspace @linkoi/deep-links --access public --tag next --dry-run
+npm login
+npm publish --workspace @linkoi/deep-links --access public --tag next
+npm view @linkoi/deep-links dist-tags --json
+```
+
+Publishing requires an npm account with permission to publish under `@linkoi`.
+Complete any npm authentication or 2FA prompt locally. Never commit npm tokens.
+A dry run does not publish anything or verify registry write access.
+
+The package's `0.1.0-rc.1` version is independent of the repository's `v0.2.0-rc.N`
+tags. GitHub RC creation does not publish npm packages. Before publishing another
+npm candidate, increment the package version and lockfile, then repeat validation.
+For the first stable npm release, change the package version to `0.1.0` and its
+publish configuration tag to `latest` in a reviewed change.
