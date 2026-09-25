@@ -1,100 +1,125 @@
-# Releases
+# Package releases
 
-Release Please manages the repository version, changelog, `vX.Y.Z` tags and
-GitHub releases. The baseline is `v0.1.1`. The root `package.json` and lockfile
-track this repository version; individual npm package versions remain separate.
-The first feature release after this setup is expected to be `v0.2.0`.
+Release Please manages independent versions for the four public npm packages.
+One combined release PR can update several packages without giving them the same
+version. The repository root and `@linkoi/accounts` remain private and are not
+release units.
 
-## PR titles determine the bump
+| Package | Stable Git tag example | Initial release baseline |
+| --- | --- | --- |
+| `@linkoi/core` | `core-v0.1.2` | Already published at `0.1.1` |
+| `@linkoi/client` | `client-v0.1.2` | Already published at `0.1.1` |
+| `@linkoi/worker` | `worker-v0.1.2` | Already published at `0.1.1` |
+| `@linkoi/deep-links` | `deep-links-v0.1.0` | Not yet published |
 
-Use Conventional Commit titles and squash merge PRs. The repository is configured
-to use the PR title as the squash commit title and an empty squash body. This
-keeps intermediate commit messages out of release calculations.
+Each package has its own changelog and manifest entry. The deep-links baseline
+`0.0.0` means no release yet; `initial-version: 0.1.0` defines its first release.
+The old root `v0.1.x` tags and `v0.2.0-rc.1` remain historical references. They
+do not describe the npm package versions. The root version is not bumped.
 
-| PR title | Release impact |
+## PR titles and affected packages
+
+Use Conventional Commit titles and squash merge PRs. GitHub uses the PR title
+as the squash commit title. Release Please uses the commit type for the bump and
+changed file paths to identify affected packages. A scope is useful context, not
+a replacement for the changed paths.
+
+| Title | Impact on affected packages |
 | --- | --- |
-| `fix: preserve video timestamps` | Patch, such as `0.1.1` to `0.1.2` |
-| `perf: reduce parsing allocations` | Patch |
-| `feat: add YouTube deep links` | Minor, such as `0.1.1` to `0.2.0` |
-| `feat!: change the resolver return type` | Major, including `0.x` to `1.0.0` |
-| `docs: explain mobile handoff` or `ci: update workflows` | No release by itself |
+| `fix(deep-links): preserve timestamps` | Patch |
+| `feat(client): add a request option` | Minor |
+| `feat(core)!: change metadata fields` | Major, including `0.x` to `1.0.0` |
+| `docs: clarify examples` or `ci: update workflows` | No release by itself |
 
-Scopes work too: `fix(youtube): preserve timestamps`. `!` marks a breaking
-change for any accepted type. A breaking change takes precedence over features
-and fixes when several PRs are included in a release. The title workflow checks
-format on PR creation and edits. It does not determine whether a change really
-is breaking; reviewers still need to assess that.
+A commit touching multiple packages can bump each of them. Root-only website,
+workflow and documentation changes do not release the npm packages. Keep PRs
+focused so the title describes the package changes accurately.
 
-Direct pushes must also use Conventional Commit messages for releasable work.
-Release Please reads the merged Git history, not PR labels.
+The `node-workspace` plugin updates internal dependencies, including peer
+and development dependencies, and the root lockfile. For example, a core
+feature can bump core to `0.2.0` and worker to `0.1.2` with an updated core peer
+range. Client and deep-links remain unchanged. Review compatibility when a
+release PR updates a peer range across a breaking change.
 
-## Release flow
+## Stable release flow
 
-1. Merge a feature or fix PR into `main`.
-2. Release Please opens or updates a release PR containing the version bump and
-   generated changelog. It includes subsequent releasable changes automatically.
-3. Generate and test a release candidate as described below. Review the release PR
-   and its CI run, then squash merge it.
-4. Release Please creates the matching tag and GitHub release.
+1. Merge a feature or fix into `main`.
+2. Release Please opens or updates `chore: release main` on the combined
+   `release-please--branches--main` branch. Review package bumps, changelogs and CI.
+3. Optionally test npm release candidates as described below.
+4. Merge the release PR. Release Please creates a tag and GitHub release for
+   each changed package and dispatches **Publish npm packages** with those tags.
+5. The publish workflow verifies the tagged source, builds and tests it, packs
+   only those packages, and publishes them under npm's `latest` dist-tag.
 
-The workflow uses the repository `GITHUB_TOKEN`; no personal token is needed.
-Actions must be allowed to create PRs in Settings > Actions > General. Because
-PRs created with `GITHUB_TOKEN` do not trigger normal PR workflows, the release
-workflow explicitly dispatches `ci.yml` on the release branch. Check that run
-before merging the release PR. A failed dispatch makes the release workflow fail.
-The CI workflow can also be rerun manually on that branch.
+Both CI and npm publication are dispatched explicitly because events created by
+`GITHUB_TOKEN` do not start ordinary PR/release workflows. Merging a release PR
+is the publication decision. A GitHub release alone does not prove npm
+publication succeeded; check **Publish npm packages** too.
 
-Releases are not automatically merged. npm publication and website/API deployment
-are separate from this workflow. No moving `latest` or major-only tags are made.
+Publication runs sequentially with core before worker. A retry skips versions
+whose existing npm tarball integrity matches; different contents or unexpected
+registry errors fail the run. Existing versions are never overwritten and a
+retry does not move dist-tags backwards. For recovery, run **Publish npm
+packages** on `main`, provide a JSON list such as `["core-v0.1.2"]` in `tags`,
+and leave `release_pr` empty. Tags in one run must share a commit. To retry a
+partial multi-package publication, supply the original tag list.
 
-## Test a release candidate
+## Optional npm release candidates
 
-After the candidate workflow is merged into `main`, open Actions > Release
-candidate > Run workflow. Select `main` and enter the open Release Please PR
-number, for example `3` for the proposed `0.2.0` release.
+Run **Publish npm packages** on `main`, leave `tags` empty, and enter the open
+combined release PR number in `release_pr`. The workflow selects packages whose
+manifest versions changed relative to the PR base and checks the exact head SHA.
 
-The workflow resolves that PR's exact head commit, runs the same build, typecheck,
-tests, site build and package checks as CI, and then creates `v0.2.0-rc.1` as a
-GitHub prerelease. It does not become the latest stable release. A changed PR
-gets the next RC number; rerunning the same commit reuses its existing candidate.
-Existing tags are never moved. If the PR changes while checks run, publication
-fails and you must start a new run.
+The candidate version appends `-rc.<workflow-run-number>` to each proposed
+package version, for example `@linkoi/deep-links@0.1.0-rc.42`. The number identifies
+the workflow run, not a consecutive candidate count for that package. Rerunning
+the same run retains its versions; starting a new run allocates new versions.
+Internal dependency and peer ranges between selected packages are rewritten to
+the matching RC versions in the packed artifacts. Source files on GitHub and
+the release PR's stable versions stay unchanged.
 
-In Kitmo, set the web app's `linkoi` dependency to
-`github:ikurotime/linkoi#v0.2.0-rc.1`, update its Bun lockfile, and run its tests
-and build. Test the YouTube handoff on physical iPhone and Android devices,
-including links opened from Instagram and LinkedIn. Record the candidate tested
-in the release PR before merging. If its head commit changes, test a new RC.
-This testing step is a maintainer responsibility, not a required approval gate.
+Candidates publish under `next`, without changing `latest` or creating stable
+Git tags. Install an exact candidate version in Kitmo and update its lockfile:
 
-Once validated, merge the release PR. Release Please creates the stable `v0.2.0`
-tag; Kitmo can then explicitly switch its dependency to that stable tag.
+```sh
+bun add --exact @linkoi/deep-links@0.1.0-rc.42
+```
 
-RC tags identify tested source commits. The root package manifest retains the
-proposed stable version and workspace versions remain independent. The workflow
-does not publish npm packages or deploy services. Candidate checks run with a
-read-only token; only the separate publishing job can create tags and releases.
-It accepts open, non-draft Release Please PRs from this repository only.
+Import from `@linkoi/deep-links`, run Kitmo's tests/build, and test app handoff on
+physical iPhone/Android devices, including Instagram and LinkedIn browsers.
+Record the version and SHA tested in the release PR. If the PR changes during
+validation, publication fails. If it changes after testing, test a fresh RC
+before merging. Candidate testing is optional and is not a branch protection gate.
 
-## Package releases and consumers
+## npm authentication
 
-This setup versions the Git repository consumed by Kitmo. It does not bump
-unchanged `@linkoi/core`, `@linkoi/worker`, `@linkoi/client` or other workspace
-packages. Their package versions describe their separately packed/npm artifacts.
-When publishing an npm package, update its version and dependent package ranges,
-run `npm run verify`, `npm run build:site` and `npm run pack:local`, inspect the
-tarball, and publish intentionally. npm publishing is not part of CI.
+The publication job uses Node 22 and npm 11.16.0 with GitHub OIDC permissions.
+Configure each public npm package's trusted publisher for GitHub owner
+`ikurotime`, repository `linkoi`, workflow filename `npm-publish.yml`, and no
+GitHub environment. Package metadata must point to this repository.
 
-Once a repository release exists, Kitmo can pin `github:ikurotime/linkoi#v0.2.0`
-and update its lockfile. Consumer updates remain explicit; a Linkoi release does
-not silently change an installed Kitmo dependency.
+For a package that does not exist yet, bootstrap publication using an npm
+account with access to `@linkoi`. A granular publishing token stored as the
+GitHub Actions secret `NPM_TOKEN` can be used for that first workflow run. Once
+trusted publishing is configured, remove the token to use OIDC. Authentication
+setup on npm is separate from merging this code. Do not commit tokens or paste
+them into PRs. Neither local login nor an npm dry run configures OIDC.
 
-The bootstrap SHA in `release-please-config.json` is the existing `v0.1.1` commit.
-It limits the first changelog scan and is ignored after the first managed release.
-Do not use `release-as` for routine bumps or manually edit the manifest to request
-a new version. If correcting a release, follow the Release Please recovery docs.
+The build job has read-only GitHub permissions and no npm credential. The publish
+job downloads verified tarballs, runs trusted tooling from `main`, and disables
+npm lifecycle scripts. No website or API deployment is part of these workflows.
+
+## Migration
+
+Close the old root release PR and the superseded repository-RC/manual npm-RC PRs
+when adopting this configuration. Keep historical tags; do not rename or delete
+them. The bootstrap SHA points to the last root `v0.1.1` baseline so existing npm
+versions are preserved while deep-links receives its first independent release.
+Do not manually bump package versions for ordinary changes or publish all
+workspaces together. Release Please owns version selection and dependency updates.
 
 References:
 
-- [Release Please action](https://github.com/googleapis/release-please-action)
-- [Manifest configuration](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md)
+- [Release Please manifest and workspace plugin](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md)
+- [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/)

@@ -72,6 +72,13 @@ Optional YouTube Data API access supplies video metadata. This does not return p
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Keep extraction independent of deployment infrastructure. Run the release checklist before publishing updates.
 
+## Package releases
+
+Public npm packages have independent versions and changelogs. Release Please
+collects changes into one release PR and publishes only the released packages.
+Optional npm candidates use the `next` tag; the private accounts workspace is
+excluded. See [package releases](./docs/release.md) for setup and testing.
+
 ## Deep links from Git
 
 The deep-link package is not yet published to npm. To consume its source, pin
