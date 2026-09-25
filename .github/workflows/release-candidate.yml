@@ -1,0 +1,90 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_pr:
+        description: Open Release Please PR number
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# Serialize allocation of RC numbers, including manual reruns.
+concurrency:
+  group: release-candidate
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.candidate.outputs.sha }}
+      version: ${{ steps.candidate.outputs.version }}
+      pr: ${{ steps.candidate.outputs.pr }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Resolve release PR
+        id: candidate
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_PR: ${{ inputs.release_pr }}
+        with:
+          script: |
+            const { resolveCandidate } = require('./scripts/release-candidate.cjs');
+            const candidate = await resolveCandidate(github, context.repo, process.env.RELEASE_PR);
+            for (const [key, value] of Object.entries(candidate)) core.setOutput(key, value);
+
+  verify:
+    needs: resolve
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: npm ci
+      - run: npm run verify
+      - run: npm run build:site
+      - run: npm run pack:local
+
+  publish:
+    needs: [resolve, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      # Load trusted workflow code, never the candidate checkout, in this job.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Publish candidate
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_PR: ${{ needs.resolve.outputs.pr }}
+          CANDIDATE_SHA: ${{ needs.resolve.outputs.sha }}
+          CANDIDATE_VERSION: ${{ needs.resolve.outputs.version }}
+        with:
+          script: |
+            const { publishCandidate } = require('./scripts/release-candidate.cjs');
+            const release = await publishCandidate(github, context.repo, {
+              pr: Number(process.env.RELEASE_PR),
+              sha: process.env.CANDIDATE_SHA,
+              version: process.env.CANDIDATE_VERSION,
+            });
+            await core.summary.addLink(release.tag_name, release.html_url).write();
