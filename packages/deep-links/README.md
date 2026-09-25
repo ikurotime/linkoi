@@ -4,9 +4,15 @@ Resolve video URLs into canonical web URLs and mobile app links. YouTube is
 the first supported provider. There are no runtime dependencies, network calls,
 browser globals, framework imports, storage or product-specific routes.
 
-The source lives in the Linkoi repository. The package is private and is not
-published to npm. `npm pack --workspace @linkoi/deep-links` produces an ESM
-artifact with TypeScript declarations.
+The API is experimental. This public package is versioned independently by
+Release Please; check npm for published versions. Optional release candidates
+use the `next` dist-tag. Pin an exact candidate version while testing in Kitmo.
+Native app handoff still needs validation on physical iPhone and Android devices,
+including Instagram and LinkedIn browsers. Always keep a visible HTTPS fallback.
+
+The source lives in the Linkoi repository. `npm pack --workspace
+@linkoi/deep-links` produces an ESM artifact with TypeScript declarations.
+See [release instructions](../../docs/release.md) for publication and RC testing.
 
 Bundler-based consumers can depend directly on this repository at an immutable
 commit and import `resolveDeepLink` from `linkoi/deep-links`. This Git entry
@@ -67,7 +73,7 @@ npm pack
 ```
 
 `npm pack` compiles before packaging and includes only `dist`, this README and
-the manifest. The artifact runs in Node, Bun and browser/Worker ESM consumers
+the license and manifest. The artifact runs in Node, Bun and browser/Worker ESM consumers
 that provide the standard `URL` and `URLSearchParams` APIs. No bundler or
 TypeScript loader is needed to consume the compiled package.
 

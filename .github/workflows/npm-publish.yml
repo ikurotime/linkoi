@@ -1,0 +1,131 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Stable release tags as JSON, e.g. ["core-v0.1.2"] (leave empty for RCs)'
+        type: string
+        default: ''
+      release_pr:
+        description: Open combined Release Please PR number (RCs only, leave tags empty)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      plan: ${{ steps.plan.outputs.plan }}
+      sha: ${{ steps.plan.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        id: plan
+        env:
+          RELEASE_TAGS: ${{ inputs.tags }}
+          RELEASE_PR: ${{ inputs.release_pr }}
+        with:
+          script: |
+            const { resolvePlan } = require('./scripts/release-plan.cjs');
+            const plan = await resolvePlan(github, context.repo, {
+              tags: process.env.RELEASE_TAGS,
+              releasePr: process.env.RELEASE_PR,
+              runNumber: context.runNumber,
+            });
+            core.setOutput('plan', JSON.stringify(plan));
+            core.setOutput('sha', plan.sha);
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: npm ci
+        working-directory: source
+      - run: npm run verify
+        working-directory: source
+      - run: npm run build:site
+        working-directory: source
+      - name: Pack only selected packages
+        env:
+          RELEASE_PLAN: ${{ needs.plan.outputs.plan }}
+        run: node tooling/scripts/pack-release.cjs source packed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-packages
+          path: packed/
+          if-no-files-found: error
+
+  publish:
+    needs: [plan, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    steps:
+      # Only trusted tooling and built tarballs enter this job, never PR code.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.16.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-packages
+          path: packed
+      - name: Ensure the release PR has not changed during validation
+        if: inputs.release_pr != ''
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_PLAN: ${{ needs.plan.outputs.plan }}
+          RELEASE_PR: ${{ inputs.release_pr }}
+        with:
+          script: |
+            const { resolvePlan } = require('./scripts/release-plan.cjs');
+            const expected = JSON.parse(process.env.RELEASE_PLAN);
+            const current = await resolvePlan(github, context.repo, {
+              releasePr: process.env.RELEASE_PR, runNumber: context.runNumber,
+            });
+            if (JSON.stringify(current) !== JSON.stringify(expected)) {
+              throw new Error('Release PR changed; start a new candidate run');
+            }
+      - name: Publish selected packages
+        env:
+          # OIDC is preferred. A scoped token can bootstrap a new package.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_PLAN: ${{ needs.plan.outputs.plan }}
+        run: node scripts/publish-packages.cjs packed

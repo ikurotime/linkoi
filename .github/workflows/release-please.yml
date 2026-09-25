@@ -39,11 +39,32 @@ jobs:
         with:
           script: |
             const pr = JSON.parse(process.env.RELEASE_PR);
-            if (pr.baseBranchName !== 'main' || !pr.headBranchName.startsWith('release-please--')) {
+            if (pr.baseBranchName !== 'main' || pr.headBranchName !== 'release-please--branches--main') {
               throw new Error('Unexpected release PR branch');
             }
             await github.rest.actions.createWorkflowDispatch({
               ...context.repo,
               workflow_id: 'ci.yml',
               ref: pr.headBranchName,
+            });
+
+      # Explicit dispatch also works for releases created with GITHUB_TOKEN.
+      - name: Publish packages released by this run
+        if: steps.release.outputs.releases_created == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_OUTPUTS: ${{ toJSON(steps.release.outputs) }}
+        with:
+          script: |
+            const outputs = JSON.parse(process.env.RELEASE_OUTPUTS);
+            const paths = JSON.parse(outputs.paths_released);
+            const allowed = ['packages/core', 'packages/client', 'packages/worker', 'packages/deep-links'];
+            if (!paths.length || paths.some(path => !allowed.includes(path))) {
+              throw new Error('Unexpected released package paths');
+            }
+            const tags = paths.map(path => outputs[`${path}--tag_name`]);
+            if (tags.some(tag => typeof tag !== 'string' || !tag)) throw new Error('Missing package release tag');
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo, workflow_id: 'npm-publish.yml', ref: 'main',
+              inputs: { tags: JSON.stringify(tags) },
             });
