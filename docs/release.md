@@ -79,8 +79,12 @@ Internal dependency and peer ranges between selected packages are rewritten to
 the matching RC versions in the packed artifacts. Source files on GitHub and
 the release PR's stable versions stay unchanged.
 
-Candidates publish under `next`, without changing `latest` or creating stable
-Git tags. Install an exact candidate version in Kitmo and update its lockfile:
+Candidates publish under `next` without creating stable Git tags. For a package
+that already exists, RC publication leaves `latest` unchanged. npm assigns
+`latest` as well on a package's very first publication, even when `--tag next`
+is specified, and rejects removing that tag. Until the first stable release,
+`latest` can therefore point to the bootstrap RC. The package README must clearly
+state its experimental status; consumers should pin a tested version. Install an exact candidate version in Kitmo and update its lockfile:
 
 ```sh
 bun add --exact @linkoi/deep-links@0.1.0-rc.42
@@ -100,7 +104,16 @@ Configure each public npm package's trusted publisher for GitHub owner
 GitHub environment. Package metadata must point to this repository.
 
 For a package that does not exist yet, bootstrap publication using an npm
-account with access to `@linkoi`. A granular publishing token stored as the
+account with access to `@linkoi`. This can be a locally validated RC under `next`;
+be aware of npm's initial `latest` behavior described above. The npm CLI can then
+configure trust for the new package:
+
+```sh
+npm trust github @linkoi/deep-links --repository ikurotime/linkoi --file npm-publish.yml --allow-publish --yes
+```
+
+Complete npm's browser 2FA confirmation. Use the same command with `core`,
+`client`, and `worker` to configure those existing packages. A granular publishing token stored as the
 GitHub Actions secret `NPM_TOKEN` can be used for that first workflow run. Once
 trusted publishing is configured, remove the token to use OIDC. Authentication
 setup on npm is separate from merging this code. Do not commit tokens or paste
@@ -123,3 +136,4 @@ References:
 
 - [Release Please manifest and workspace plugin](https://github.com/googleapis/release-please/blob/main/docs/manifest-releaser.md)
 - [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/)
+- [npm initial latest tag behavior](https://github.com/npm/cli/issues/8490)
