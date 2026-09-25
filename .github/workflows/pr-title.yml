@@ -1,0 +1,23 @@
+name: PR title
+
+# Read PR metadata only. Never check out or execute code from the PR here.
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  title:
+    name: Conventional PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const conventional = /^(feat|fix|perf|revert|docs|style|refactor|test|build|ci|chore)(\([a-z0-9][a-z0-9._/-]*\))?!?: \S[^\r\n]*$/;
+            if (!conventional.test(title)) {
+              core.setFailed('Use a Conventional Commit title, e.g. feat: add YouTube links, fix: preserve timestamps, or feat!: change the resolver API.');
+            }
