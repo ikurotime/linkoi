@@ -47,3 +47,25 @@ jobs:
               workflow_id: 'ci.yml',
               ref: pr.headBranchName,
             });
+
+      - name: Build and publish a release candidate
+        if: steps.release.outputs.pr != ''
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        with:
+          script: |
+            const pr = JSON.parse(process.env.RELEASE_PR);
+            if (pr.baseBranchName !== 'main' ||
+                pr.headBranchName !== 'release-please--branches--main--components--linkoi' ||
+                !Number.isSafeInteger(pr.number) || pr.number < 1) {
+              throw new Error('Unexpected release PR');
+            }
+            // Dispatch explicitly: bot-created PR events do not start workflows.
+            // Run trusted workflow code on main; the candidate resolves the PR SHA.
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: 'release-candidate.yml',
+              ref: 'main',
+              inputs: { release_pr: String(pr.number) },
+            });

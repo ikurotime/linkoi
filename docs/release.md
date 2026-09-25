@@ -33,7 +33,7 @@ Release Please reads the merged Git history, not PR labels.
 1. Merge a feature or fix PR into `main`.
 2. Release Please opens or updates a release PR containing the version bump and
    generated changelog. It includes subsequent releasable changes automatically.
-3. Generate and test a release candidate as described below. Review the release PR
+3. Test the automatically generated release candidate as described below. Review the release PR
    and its CI run, then squash merge it.
 4. Release Please creates the matching tag and GitHub release.
 
@@ -49,9 +49,16 @@ are separate from this workflow. No moving `latest` or major-only tags are made.
 
 ## Test a release candidate
 
-After the candidate workflow is merged into `main`, open Actions > Release
-candidate > Run workflow. Select `main` and enter the open Release Please PR
-number, for example `3` for the proposed `0.2.0` release.
+Release Please automatically dispatches the Release candidate workflow whenever
+it creates or updates a release PR. This explicit dispatch works for bot-created
+PRs, whose normal PR events do not trigger workflows. The candidate workflow runs
+from `main` and validates the release PR's exact commit before publishing.
+
+For a retry or an existing release PR, open Actions > Release candidate > Run
+workflow. Select `main` and enter the open Release Please PR number, for example
+`3` for the proposed `0.2.0` release. Manual runs remain available. A failed
+candidate run must be fixed or retried before testing; dispatch success alone
+does not mean a candidate was published.
 
 The workflow resolves that PR's exact head commit, runs the same build, typecheck,
 tests, site build and package checks as CI, and then creates `v0.2.0-rc.1` as a
